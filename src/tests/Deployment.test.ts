@@ -28,13 +28,5 @@ describe("Deployment", () => {
             environment: "test"
         })
     })
-
-    it("getDefaultTags", () => {
-        expect(deployment.getDefaultTags()).toStrictEqual({
-            location: "australiaeast",
-            project: "example",
-            environment: "test"
-        })
-    })
     
 })

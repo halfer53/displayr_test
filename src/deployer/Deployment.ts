@@ -27,7 +27,6 @@ export class Deployment{
         this.pulumiConfig = new Pulumi.Config()
         this.projectConfig = this.getProjectConfig()
         this.deploymentConfig = this.getDeploymentConfig()
-        this.defaultTags = this.getDefaultTags()
     }
 
     getProjectConfig(): ProjectConfig {
@@ -40,14 +39,6 @@ export class Deployment{
             locationCode: locationCodeMapping[this.projectConfig.location],
             projectName: this.pulumiConfig.name,
             environment: Pulumi.getStack()
-        }
-    }
-
-    getDefaultTags(): Record<string, string> {
-        return {
-            location: this.projectConfig.location,
-            environment: this.deploymentConfig.environment,
-            project: this.deploymentConfig.projectName
         }
     }
 
