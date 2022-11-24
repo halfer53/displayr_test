@@ -2,11 +2,13 @@ import { DeploymentConfig } from "./Deployment";
 import { ResourceGroup } from "@pulumi/azure-native/resources";
 import { StorageAccount } from "@pulumi/azure-native/storage";
 import { storage } from "@pulumi/azure-native/types/enums";
+import { AppServicePlan, WebApp } from "@pulumi/azure-native/web";
 
 export class DisplayrFunction {
     config: DeploymentConfig
     resourceGroup: ResourceGroup
     storageAccount: StorageAccount
+    asp: AppServicePlan
 
     constructor(deploymentConfig: DeploymentConfig){
         this.config = deploymentConfig
@@ -15,7 +17,8 @@ export class DisplayrFunction {
 
     run(){
         this.resourceGroup = this.deployResourceGroup(this.config);
-        this.storageAccount = this.deployStorageAccount(this.config, this.resourceGroup)
+        this.storageAccount = this.deployStorageAccount(this.config, this.resourceGroup);
+        this.asp = this.deployAppServicePlan(this.config, this.resourceGroup);
     }
 
     deployResourceGroup(config: DeploymentConfig): ResourceGroup {
@@ -35,6 +38,19 @@ export class DisplayrFunction {
             resourceGroupName: rg.name,
             sku: {
                 name: storage.SkuName.Standard_LRS,
+            }
+        })
+    }
+
+    deployAppServicePlan(config: DeploymentConfig, rg: ResourceGroup): AppServicePlan {
+        const name = `${config.projectName}-${config.environment}-${config.locationCode}-asp`
+        return new AppServicePlan(name, {
+            name: name,
+            location: config.locationCode,
+            resourceGroupName: rg.name,
+            sku: {
+                name: 'Y1',
+                tier: 'Dynamic'
             }
         })
     }
