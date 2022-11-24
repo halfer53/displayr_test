@@ -1,4 +1,4 @@
-import "jest";
+import { beforeAll, describe, it, expect } from "@jest/globals";
 import { DisplayrFunction } from "../deployer/Function";
 import { setupEnvironmentVariable, setupPulumiMock, DEPLOYMENT_CONFIG } from './__utils__/common'
 
@@ -32,6 +32,14 @@ describe("Function", () => {
         it("name", () => {
             func.storageAccount.name.apply((name) => {
                 expect(name).toBe("exampletestauest")
+            })
+        })
+    })
+
+    describe("app service plan", () => {
+        it("name", () => {
+            func.asp.name.apply((name) => {
+                expect(name).toBe("example-test-aue-asp")
             })
         })
     })
