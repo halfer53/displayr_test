@@ -28,6 +28,14 @@ describe("Function", () => {
         })
     })
 
+    describe("storage account", () => {
+        it("name", () => {
+            func.storageAccount.name.apply((name) => {
+                expect(name).toBe("exampletestauest")
+            })
+        })
+    })
+
     
     
 })
