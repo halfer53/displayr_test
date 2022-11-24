@@ -1,8 +1,16 @@
 import * as Pulumi from '@pulumi/pulumi'
 import { DisplayrFunction } from './Function'
 
+export interface DisplayrFunctionAppArg {
+    readonly container: string
+    readonly healthCheckPath: string
+}
+export interface FunctionAppDict {
+    readonly [index: string]: DisplayrFunctionAppArg
+}
 export class ProjectConfig {
     readonly location: string
+    readonly functionApps: FunctionAppDict
 }
 
 export class DeploymentConfig {
