@@ -54,4 +54,22 @@ export class DisplayrFunction {
             }
         })
     }
+
+    deployFunctionApp(config: DeploymentConfig, rg: ResourceGroup, asp: AppServicePlan): WebApp {
+        const name = `${config.projectName}-${config.environment}-${config.locationCode}-app`
+        return new WebApp(name, {
+            resourceGroupName: rg.name,
+            serverFarmId: asp.id,
+            kind: "functionapp",
+            siteConfig: {
+                appSettings: [
+                    { name: "FUNCTIONS_EXTENSION_VERSION", value: "~3" },
+                    { name: "FUNCTIONS_WORKER_RUNTIME", value: "node" },
+                    { name: "WEBSITE_NODE_DEFAULT_VERSION", value: "~14" },
+                ],
+                http20Enabled: true,
+                nodeVersion: "~14",
+            },
+        })
+    }
 }
