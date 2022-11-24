@@ -1,6 +1,6 @@
 import * as Pulumi from '@pulumi/pulumi'
 import { MockCallArgs } from "@pulumi/pulumi/runtime/mocks";
-import { DeploymentConfig } from "../../deployer/Deployment";
+import { DeploymentConfig, ProjectConfig } from "../../deployer/Deployment";
 
 export function setupEnvironmentVariable() {
     // Calls to Pulumi.GetProject() and Pulumi.GetStack() returns the following
@@ -70,10 +70,12 @@ export function setupPulumiMock() {
     );
 }
 
+export const PROJECT_CONFIG: ProjectConfig = {
+    location: "australiaeast"
+}
+
 export const DEPLOYMENT_CONFIG: DeploymentConfig = {
-    projectConfig: {
-        location: "australiaeast"
-    },
+    projectConfig: PROJECT_CONFIG,
     locationCode: "aue",
     projectName: "example",
     environment: "test"
