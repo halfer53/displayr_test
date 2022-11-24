@@ -1,6 +1,6 @@
 import "jest";
-import { Deployment, ProjectConfig } from "../deployer/Deployment";
-import { setupEnvironmentVariable, setupPulumiMock, DEPLOYMENT_CONFIG } from './__utils__/common'
+import { Deployment } from "../deployer/Deployment";
+import { setupEnvironmentVariable, setupPulumiMock, PROJECT_CONFIG } from './__utils__/common'
 
 beforeAll(() => {
     setupEnvironmentVariable();
@@ -11,10 +11,7 @@ describe("Deployment", () => {
     let deployment: Deployment
 
     beforeAll(() => {
-        const mockconfig : ProjectConfig = {
-            location: "australiaeast"
-        }
-        jest.spyOn(Deployment.prototype, 'getProjectConfig').mockImplementation(() => mockconfig)
+        jest.spyOn(Deployment.prototype, 'getProjectConfig').mockImplementation(() => PROJECT_CONFIG)
         deployment = new Deployment()
     })
 
