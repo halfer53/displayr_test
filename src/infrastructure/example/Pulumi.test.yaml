@@ -4,4 +4,6 @@ config:
     functionApps:
       foo:
         healthCheckPath: '/'
+      bar:
+        healthCheckPath: '/'
         
