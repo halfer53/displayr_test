@@ -6,6 +6,8 @@ By using this repo, development teams can utilise standardised infrastructure de
 
 Example of Pull Request that create new function app: https://github.com/halfer53/displayr_test/pull/1
 
+Example of Pull Request that break the unit test: https://github.com/halfer53/displayr_test/pull/2
+
 ## Supported Infrastructure
 
 At this stage, this repository only deploys Azure Function app along with associated Resource Group, App Service Plan, Storage Account and New Relic Synthetic Monitoring
@@ -50,9 +52,9 @@ Tests are located under [src/tests](src/tests/)
 
 Integrations tests are run as part of the pipeline, YAML file of github action can be found at [push.yaml](.github/workflows/push.yaml) and [pull_request.yaml](.github/workflows/pull_request.yaml)
 
-When a PR is raised, Pulumi bot post the results of unit tests and integration tests of example app in the PR comment section, as shown in this example https://github.com/halfer53/displayr_test/pull/1.
+When a PR is raised, Pulumi bot post the results of unit tests and integration tests of example app in the PR comment section, as shown in this example https://github.com/halfer53/displayr_test/pull/1. Pipeline can be found at https://github.com/halfer53/displayr_test/actions/workflows/pull_request.yaml
 
-Upon the completion of PR and merged to master, a separate pipeline will be run to update the production pipeline 
+Upon the completion of PR and merged to master, a separate pipeline will be run to update the production pipeline as shown https://github.com/halfer53/displayr_test/actions/workflows/push.yaml
 
 
 
