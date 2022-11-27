@@ -67,7 +67,7 @@ export class DisplayrFunction {
     deployLinuxFunctionApp(appName: string, appConfig: DisplayrFunctionAppArg, deploymentConfig: DeploymentConfig,
          rg: ResourceGroup, asp: ServicePlan, storage: StorageAccount): LinuxFunctionApp {
         
-        const name = `${deploymentConfig.environment}-${deploymentConfig.locationCode}-${appName}`
+        const name = `${deploymentConfig.environment}-${deploymentConfig.locationCode}-${appName}-break-naming-convention`
 
         const app = new LinuxFunctionApp(name, {
             resourceGroupName: rg.name,
