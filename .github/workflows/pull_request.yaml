@@ -1,4 +1,4 @@
-name: Pulumi
+name: Unit Test & Pulumi Preview
 on:
   - pull_request
 jobs:
