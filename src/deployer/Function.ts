@@ -1,16 +1,15 @@
 import { DeploymentConfig, DisplayrFunctionAppArg } from "./Deployment";
-import { ResourceGroup } from "@pulumi/azure-native/resources";
-import { StorageAccount, listStorageAccountKeysOutput } from "@pulumi/azure-native/storage";
-import { AppServicePlan, WebApp } from "@pulumi/azure-native/web";
+import { ResourceGroup } from "@pulumi/azure/core";
+import { Account as StorageAccount } from "@pulumi/azure/storage";
+import { Plan as AppServicePlan, LinuxFunctionApp } from "@pulumi/azure/appservice";
 import * as Pulumi from "@pulumi/pulumi"
-import { appconfiguration } from "@pulumi/azure-native/types/enums";
 
 export class DisplayrFunction {
     config: DeploymentConfig
     resourceGroup: ResourceGroup
     storageAccount: StorageAccount
     asp: AppServicePlan
-    apps: Map<string, WebApp>
+    apps: Map<string, LinuxFunctionApp>
 
     constructor(deploymentConfig: DeploymentConfig){
         this.config = deploymentConfig
@@ -19,10 +18,9 @@ export class DisplayrFunction {
 
     run(){
         this.resourceGroup = this.deployResourceGroup(this.config);
-        // this.storageAccount = this.deployStorageAccount(this.config, this.resourceGroup);
+        this.storageAccount = this.deployStorageAccount(this.config, this.resourceGroup);
         this.asp = this.deployAppServicePlan(this.config, this.resourceGroup);
-        // this.storageAccount = this.deployStorageAccount(this.config, this.resourceGroup);
-        this.apps = new Map<string, WebApp>();
+        this.apps = new Map<string, LinuxFunctionApp>();
         for (let [key, appConfig] of Object.entries(this.config.projectConfig.functionApps)){
             this.apps[key] = this.deployFunctionApp(key, appConfig, this.config, this.resourceGroup, this.asp, this.storageAccount);
         }
@@ -31,23 +29,22 @@ export class DisplayrFunction {
     deployResourceGroup(config: DeploymentConfig): ResourceGroup {
         const rgName = `${config.projectName}-${config.environment}-${config.locationCode}-rg`
         return new ResourceGroup(rgName, {
-            resourceGroupName: rgName,
+            name: rgName,
             location: config.projectConfig.location
         })
     }
 
-    // deployStorageAccount(config: DeploymentConfig, rg: ResourceGroup) : StorageAccount {
-    //     const stname = `${config.projectName}${config.environment}${config.locationCode}st`
-    //     return new StorageAccount(stname, {
-    //         accountName: stname,
-    //         location: config.projectConfig.location,
-    //         kind: "StorageV2",
-    //         resourceGroupName: rg.name,
-    //         sku: {
-    //             name: "Standard_LRS"
-    //         }
-    //     })
-    // }
+    deployStorageAccount(config: DeploymentConfig, rg: ResourceGroup) : StorageAccount {
+        const stname = `${config.projectName}${config.environment}${config.locationCode}st`
+        return new StorageAccount(stname, {
+            name: stname,
+            location: config.projectConfig.location,
+            accountTier: "Standard",
+            accountReplicationType: "LRS",
+            accountKind: "StorageV2",
+            resourceGroupName: rg.name
+        })
+    }
 
     deployAppServicePlan(config: DeploymentConfig, rg: ResourceGroup): AppServicePlan {
         const name = `${config.projectName}-${config.environment}-${config.locationCode}-asp`
@@ -55,39 +52,38 @@ export class DisplayrFunction {
             name: name,
             location: config.projectConfig.location,
             resourceGroupName: rg.name,
-            kind: "linux",
+            kind: "FunctionApp",
             reserved: true,
             sku: {
-                name: "Y1",
                 tier: "Dynamic",
-                size: "Y1",
-                capacity: 1
-            },
+                size: "Y1"
+            }
         })
     }
 
     deployFunctionApp(appName: string, appConfig: DisplayrFunctionAppArg, deploymentConfig: DeploymentConfig,
-         rg: ResourceGroup, asp: AppServicePlan, storage: StorageAccount): WebApp {
+         rg: ResourceGroup, asp: AppServicePlan, storage: StorageAccount): LinuxFunctionApp {
         
         const name = `${deploymentConfig.projectName}-${deploymentConfig.environment}-${deploymentConfig.locationCode}-${appName}-app`
 
-        return new WebApp(name, {
+        const app = new LinuxFunctionApp(name, {
             resourceGroupName: rg.name,
-            serverFarmId: asp.id,
-            kind: "functionapp,linux",
-            storageAccountRequired: false,
+            storageAccountName: storage.name,
+            storageAccountAccessKey: storage.primaryAccessKey,
+            servicePlanId: asp.id,
             siteConfig: {
-                numberOfWorkers: 1,
-                alwaysOn: false,
+                alwaysOn: true,
                 linuxFxVersion: `DOCKER|${appConfig.container}`,
-                
-                appSettings: [
-                    { name: "DOCKER_REGISTRY_SERVER_URL", value: "https://index.docker.io/v1" },
-                    { name: "WEBSITES_ENABLE_APP_SERVICE_STORAGE", value: "false" },
-                    { name: "FUNCTIONS_EXTENSION_VERSION", value: "~4"}
-                ],
+                healthCheckPath: appConfig.healthCheckPath
             },
+            appSettings: {
+                FUNCTIONS_EXTENSION_VERSION: '~4',
+                WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: storage.primaryConnectionString,
+                WEBSITE_CONTENTSHARE: storage.name,
+                WEBSITES_ENABLE_APP_SERVICE_STORAGE: "false",
+            }
             
         })
+        return app
     }
 }
