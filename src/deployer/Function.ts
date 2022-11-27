@@ -42,7 +42,7 @@ export class DisplayrFunction {
             accountTier: "Standard",
             accountReplicationType: "LRS",
             accountKind: "StorageV2",
-            resourceGroupName: rg.name
+            resourceGroupName: rg.name,
         })
     }
 
@@ -74,15 +74,11 @@ export class DisplayrFunction {
             enabled: true,
             version: '~4',
             siteConfig: {
-                alwaysOn: true,
-                healthCheckPath: appConfig.healthCheckPath,
-                linuxFxVersion: `DOCKER|${appConfig.container}`
+                linuxFxVersion: "NODE|12-lts"
             },
             appSettings: {
                 WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: storage.primaryConnectionString,
                 WEBSITE_CONTENTSHARE: storage.name,
-                WEBSITES_ENABLE_APP_SERVICE_STORAGE: "false",
-                AzureWebJobsDisableHomepage: "true",
             },
         })
         return app
