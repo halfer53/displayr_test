@@ -39,6 +39,11 @@ export class DisplayrFunction {
 
     deployStorageAccount(config: DeploymentConfig, rg: ResourceGroup) : StorageAccount {
         const stname = `${config.projectName}${config.environment}${config.locationCode}st`
+
+        if(stname.length > 24){
+            throw Error(`${stname} exceeds maximum length of 24`)
+        }
+
         return new StorageAccount(stname, {
             name: stname,
             location: config.projectConfig.location,

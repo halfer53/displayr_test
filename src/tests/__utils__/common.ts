@@ -15,42 +15,6 @@ export function setupPulumiMock() {
     // Set mocks for all pulumi resources
     Pulumi.runtime.setMocks({
         newResource: function (args: Pulumi.runtime.MockResourceArgs): { id: string, state: any } {
-            switch (args.type) {
-                case "azure-native:resources:ResourceGroup":
-                    return {
-                        id: `${args.inputs.name}-id`,
-                        state: {
-                            ...args.inputs,
-                            name: args.inputs.resourceGroupName,
-                        }
-                    }
-   
-                case "azure-native:web:WebApp": {
-                    return {
-                        id: `${args.inputs.name}-id`,
-                        state: {
-                            ...args.inputs,
-                            name: args.inputs.name,
-                            resourceGroup: args.inputs.resourceGroupName,
-                            siteConfig: args.inputs.siteConfig,
-                            clientAffinityEnabled: args.inputs.clientAffinityEnabled,
-                        }
-                    }
-                }
-                
-                case "azure-native:web:WebAppSlot": {
-                    return {
-                        id: `${args.inputs.name}-id`,
-                        state: {
-                            ...args.inputs,
-                            resourceGroup: args.inputs.resourceGroupName,
-                            siteConfig: args.inputs.siteConfig,
-                            clientAffinityEnabled: args.inputs.clientAffinityEnabled
-                        }
-                    }
-                }
-            }
-
             // generic return type
             return {
                 id: `${args.inputs.name}-id`,
@@ -71,7 +35,12 @@ export function setupPulumiMock() {
 }
 
 export const PROJECT_CONFIG: ProjectConfig = {
-    location: "australiaeast"
+    location: "australiaeast",
+    functionApps: {
+        foo: {
+            healthCheckPath: "/"
+        }
+    }
 }
 
 export const DEPLOYMENT_CONFIG: DeploymentConfig = {

@@ -1,7 +1,7 @@
 import { beforeAll, describe, it, expect } from "@jest/globals";
 import { app } from "@pulumi/azure-native/types/enums";
 import { DisplayrFunction } from "../deployer/Function";
-import { setupEnvironmentVariable, setupPulumiMock, DEPLOYMENT_CONFIG } from './__utils__/common'
+import { setupEnvironmentVariable, setupPulumiMock, DEPLOYMENT_CONFIG, PROJECT_CONFIG } from './__utils__/common'
 
 beforeAll(() => {
     setupEnvironmentVariable();
@@ -9,21 +9,21 @@ beforeAll(() => {
 })
 
 describe("Function", () => {
-    let func: DisplayrFunction
+    let service: DisplayrFunction
 
     beforeAll(() => {
-        func = new DisplayrFunction(DEPLOYMENT_CONFIG)
+        service = new DisplayrFunction(DEPLOYMENT_CONFIG)
     })
 
     describe("resource group", () => {
         it("name", () => {
-            func.resourceGroup.name.apply((name) => {
+            service.resourceGroup.name.apply((name) => {
                 expect(name).toBe("example-test-aue-rg")
             })
         })
 
         it("location", () => {
-            func.resourceGroup.location.apply((location) => {
+            service.resourceGroup.location.apply((location) => {
                 expect(location).toBe("australiaeast")
             })
         })
@@ -31,7 +31,7 @@ describe("Function", () => {
 
     describe("storage account", () => {
         it("name", () => {
-            func.storageAccount.name.apply((name) => {
+            service.storageAccount.name.apply((name) => {
                 expect(name).toBe("exampletestauest")
             })
         })
@@ -39,7 +39,7 @@ describe("Function", () => {
 
     describe("app service plan", () => {
         it("name", () => {
-            func.asp.name.apply((name) => {
+            service.asp.name.apply((name) => {
                 expect(name).toBe("example-test-aue-asp")
             })
         })
@@ -47,11 +47,23 @@ describe("Function", () => {
 
     describe("linux function app", () => {
         it("name", () => {
-            for (let [_, app] of func.apps){
+            for (let [_, app] of service.apps){
                 app.name.apply((name) => {
                     expect(name).toBe("test-aue-foo")
                 })
             }
+        })
+
+        it("name too long", () => {
+            let config = {
+                projectConfig: PROJECT_CONFIG,
+                locationCode: "aue",
+                projectName: "projectNameTooLong",
+                environment: "test"
+            }
+            const func = () => service.deployStorageAccount(config, service.storageAccount)
+            expect(func).toThrow()
+            expect(func).toThrow("projectNameTooLongtestauest exceeds maximum length of 24")
         })
     })
 
