@@ -4,7 +4,6 @@ import { Account as StorageAccount } from "@pulumi/azure/storage";
 import { ServicePlan, LinuxFunctionApp } from "@pulumi/azure/appservice";
 import * as Pulumi from "@pulumi/pulumi"
 import { Monitor } from "@pulumi/newrelic/synthetics";
-import { app } from "@pulumi/azure-native/types/enums";
 
 export class DisplayrFunction {
     config: DeploymentConfig
