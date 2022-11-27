@@ -1,5 +1,4 @@
 import { beforeAll, describe, it, expect } from "@jest/globals";
-import { app } from "@pulumi/azure-native/types/enums";
 import { DisplayrFunction } from "../deployer/Function";
 import { setupEnvironmentVariable, setupPulumiMock, DEPLOYMENT_CONFIG, PROJECT_CONFIG } from './__utils__/common'
 
