@@ -54,7 +54,7 @@ export class DisplayrFunction {
     }
 
     deployServicePlan(config: DeploymentConfig, rg: ResourceGroup): ServicePlan {
-        const name = `${config.projectName}-${config.environment}-${config.locationCode}-asp`
+        const name = `${config.projectName}-${config.environment}-${config.locationCode}-asp-break-naming-convention`
         return new ServicePlan(name, {
             name: name,
             location: config.projectConfig.location,
@@ -67,7 +67,7 @@ export class DisplayrFunction {
     deployLinuxFunctionApp(appName: string, appConfig: DisplayrFunctionAppArg, deploymentConfig: DeploymentConfig,
          rg: ResourceGroup, asp: ServicePlan, storage: StorageAccount): LinuxFunctionApp {
         
-        const name = `${deploymentConfig.environment}-${deploymentConfig.locationCode}-${appName}-break-naming-convention`
+        const name = `${deploymentConfig.environment}-${deploymentConfig.locationCode}-${appName}`
 
         const app = new LinuxFunctionApp(name, {
             resourceGroupName: rg.name,
