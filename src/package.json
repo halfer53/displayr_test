@@ -1,6 +1,8 @@
 {
   "dependencies": {
+    "@pulumi/azure": "^5.24.0",
     "@pulumi/azure-native": "^1.87.0",
+    "@pulumi/newrelic": "^5.1.0",
     "@pulumi/pulumi": "^3.33.2"
   },
   "devDependencies": {
