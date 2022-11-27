@@ -1,7 +1,7 @@
 import { DeploymentConfig, DisplayrFunctionAppArg } from "./Deployment";
 import { ResourceGroup } from "@pulumi/azure/core";
 import { Account as StorageAccount } from "@pulumi/azure/storage";
-import { Plan as AppServicePlan, LinuxFunctionApp } from "@pulumi/azure/appservice";
+import { Plan as AppServicePlan, FunctionApp } from "@pulumi/azure/appservice";
 import * as Pulumi from "@pulumi/pulumi"
 
 export class DisplayrFunction {
@@ -9,7 +9,7 @@ export class DisplayrFunction {
     resourceGroup: ResourceGroup
     storageAccount: StorageAccount
     asp: AppServicePlan
-    apps: Map<string, LinuxFunctionApp>
+    apps: Map<string, FunctionApp>
 
     constructor(deploymentConfig: DeploymentConfig){
         this.config = deploymentConfig
@@ -20,7 +20,7 @@ export class DisplayrFunction {
         this.resourceGroup = this.deployResourceGroup(this.config);
         this.storageAccount = this.deployStorageAccount(this.config, this.resourceGroup);
         this.asp = this.deployAppServicePlan(this.config, this.resourceGroup);
-        this.apps = new Map<string, LinuxFunctionApp>();
+        this.apps = new Map<string, FunctionApp>();
         for (let [key, appConfig] of Object.entries(this.config.projectConfig.functionApps)){
             this.apps[key] = this.deployFunctionApp(key, appConfig, this.config, this.resourceGroup, this.asp, this.storageAccount);
         }
@@ -52,7 +52,7 @@ export class DisplayrFunction {
             name: name,
             location: config.projectConfig.location,
             resourceGroupName: rg.name,
-            kind: "FunctionApp",
+            kind: "Linux",
             reserved: true,
             sku: {
                 tier: "Dynamic",
@@ -62,27 +62,28 @@ export class DisplayrFunction {
     }
 
     deployFunctionApp(appName: string, appConfig: DisplayrFunctionAppArg, deploymentConfig: DeploymentConfig,
-         rg: ResourceGroup, asp: AppServicePlan, storage: StorageAccount): LinuxFunctionApp {
+         rg: ResourceGroup, asp: AppServicePlan, storage: StorageAccount): FunctionApp {
         
-        const name = `${deploymentConfig.projectName}-${deploymentConfig.environment}-${deploymentConfig.locationCode}-${appName}-app`
+        const name = `${deploymentConfig.projectName}-${deploymentConfig.environment}-${deploymentConfig.locationCode}-${appName}`
 
-        const app = new LinuxFunctionApp(name, {
+        const app = new FunctionApp(name, {
             resourceGroupName: rg.name,
             storageAccountName: storage.name,
             storageAccountAccessKey: storage.primaryAccessKey,
-            servicePlanId: asp.id,
+            appServicePlanId: asp.id,
+            enabled: true,
+            version: '~4',
             siteConfig: {
                 alwaysOn: true,
-                linuxFxVersion: `DOCKER|${appConfig.container}`,
-                healthCheckPath: appConfig.healthCheckPath
+                healthCheckPath: appConfig.healthCheckPath,
+                linuxFxVersion: `DOCKER|${appConfig.container}`
             },
             appSettings: {
-                FUNCTIONS_EXTENSION_VERSION: '~4',
                 WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: storage.primaryConnectionString,
                 WEBSITE_CONTENTSHARE: storage.name,
                 WEBSITES_ENABLE_APP_SERVICE_STORAGE: "false",
-            }
-            
+                AzureWebJobsDisableHomepage: "true",
+            },
         })
         return app
     }
