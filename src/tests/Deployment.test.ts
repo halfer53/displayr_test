@@ -1,4 +1,4 @@
-import "jest";
+import { beforeAll, describe, it, expect, jest } from "@jest/globals";
 import { Deployment } from "../deployer/Deployment";
 import { setupEnvironmentVariable, setupPulumiMock, PROJECT_CONFIG } from './__utils__/common'
 
@@ -17,9 +17,7 @@ describe("Deployment", () => {
 
     it("getDeploymentConfig", () => {
         expect(deployment.getDeploymentConfig()).toStrictEqual({
-            projectConfig: {
-                location: "australiaeast"
-            },
+            projectConfig: PROJECT_CONFIG,
             locationCode: "aue",
             projectName: "example",
             environment: "test"
