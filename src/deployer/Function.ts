@@ -1,15 +1,17 @@
 import { DeploymentConfig, DisplayrFunctionAppArg } from "./Deployment";
 import { ResourceGroup } from "@pulumi/azure/core";
 import { Account as StorageAccount } from "@pulumi/azure/storage";
-import { Plan as AppServicePlan, FunctionApp } from "@pulumi/azure/appservice";
+import { ServicePlan, LinuxFunctionApp } from "@pulumi/azure/appservice";
 import * as Pulumi from "@pulumi/pulumi"
+import { Monitor } from "@pulumi/newrelic/synthetics";
+import { app } from "@pulumi/azure-native/types/enums";
 
 export class DisplayrFunction {
     config: DeploymentConfig
     resourceGroup: ResourceGroup
     storageAccount: StorageAccount
-    asp: AppServicePlan
-    apps: Map<string, FunctionApp>
+    asp: ServicePlan
+    apps: Map<string, LinuxFunctionApp>
 
     constructor(deploymentConfig: DeploymentConfig){
         this.config = deploymentConfig
@@ -19,10 +21,11 @@ export class DisplayrFunction {
     run(){
         this.resourceGroup = this.deployResourceGroup(this.config);
         this.storageAccount = this.deployStorageAccount(this.config, this.resourceGroup);
-        this.asp = this.deployAppServicePlan(this.config, this.resourceGroup);
-        this.apps = new Map<string, FunctionApp>();
+        this.asp = this.deployServicePlan(this.config, this.resourceGroup);
+        this.apps = new Map<string, LinuxFunctionApp>();
         for (let [key, appConfig] of Object.entries(this.config.projectConfig.functionApps)){
-            this.apps[key] = this.deployFunctionApp(key, appConfig, this.config, this.resourceGroup, this.asp, this.storageAccount);
+            this.apps[key] = this.deployLinuxFunctionApp(key, appConfig, this.config, this.resourceGroup, this.asp, this.storageAccount);
+            this.deployMonitoring(key, appConfig, this.apps[key])
         }
     }
 
@@ -46,41 +49,43 @@ export class DisplayrFunction {
         })
     }
 
-    deployAppServicePlan(config: DeploymentConfig, rg: ResourceGroup): AppServicePlan {
+    deployServicePlan(config: DeploymentConfig, rg: ResourceGroup): ServicePlan {
         const name = `${config.projectName}-${config.environment}-${config.locationCode}-asp`
-        return new AppServicePlan(name, {
+        return new ServicePlan(name, {
             name: name,
             location: config.projectConfig.location,
             resourceGroupName: rg.name,
-            kind: "Linux",
-            reserved: true,
-            sku: {
-                tier: "Dynamic",
-                size: "Y1"
-            }
+            osType: "Linux",
+            skuName: "Y1"
         })
     }
 
-    deployFunctionApp(appName: string, appConfig: DisplayrFunctionAppArg, deploymentConfig: DeploymentConfig,
-         rg: ResourceGroup, asp: AppServicePlan, storage: StorageAccount): FunctionApp {
+    deployLinuxFunctionApp(appName: string, appConfig: DisplayrFunctionAppArg, deploymentConfig: DeploymentConfig,
+         rg: ResourceGroup, asp: ServicePlan, storage: StorageAccount): LinuxFunctionApp {
         
-        const name = `${deploymentConfig.projectName}-${deploymentConfig.environment}-${deploymentConfig.locationCode}-${appName}`
+        const name = `${deploymentConfig.environment}-${deploymentConfig.locationCode}-${appName}`
 
-        const app = new FunctionApp(name, {
+        const app = new LinuxFunctionApp(name, {
             resourceGroupName: rg.name,
             storageAccountName: storage.name,
             storageAccountAccessKey: storage.primaryAccessKey,
-            appServicePlanId: asp.id,
+            servicePlanId: asp.id,
             enabled: true,
-            version: '~4',
-            siteConfig: {
-                linuxFxVersion: "NODE|12-lts"
-            },
-            appSettings: {
-                WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: storage.primaryConnectionString,
-                WEBSITE_CONTENTSHARE: storage.name,
-            },
+            siteConfig: {}
         })
         return app
+    }
+
+    deployMonitoring(appName: string, appConfig: DisplayrFunctionAppArg, app: LinuxFunctionApp) : Monitor {
+        console.log(Pulumi.interpolate`https://${app.defaultHostname}${appConfig.healthCheckPath}`)
+        return new Monitor(`${appName}-monitor`, {
+            period: "EVERY_MINUTE",
+            status: "ENABLED",
+            type: "SIMPLE",
+            uri: Pulumi.interpolate`https://${app.defaultHostname}${appConfig.healthCheckPath}`,
+            locationsPublics: [
+                "AP_SOUTHEAST_2"
+            ]
+        })
     }
 }

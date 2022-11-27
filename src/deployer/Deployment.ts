@@ -2,7 +2,6 @@ import * as Pulumi from '@pulumi/pulumi'
 import { DisplayrFunction } from './Function'
 
 export interface DisplayrFunctionAppArg {
-    readonly container: string
     readonly healthCheckPath: string
 }
 export interface FunctionAppDict {
