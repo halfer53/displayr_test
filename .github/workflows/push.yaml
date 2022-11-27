@@ -9,7 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: npm install --omit=dev
+      - run: npm install
+        working-directory: src
+      - run: npm run test
         working-directory: src
       - uses: pulumi/actions@v3
         with:
