@@ -1,3 +1,7 @@
 config:
   example:project:
     location: australiaeast
+    functionApps:
+      foo:
+        healthCheckPath: '/'
+        
