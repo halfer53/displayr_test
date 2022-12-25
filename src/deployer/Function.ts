@@ -81,7 +81,6 @@ export class DisplayrFunction {
     }
 
     deployMonitoring(appName: string, appConfig: DisplayrFunctionAppArg, app: LinuxFunctionApp) : Monitor {
-        console.log(Pulumi.interpolate`https://${app.defaultHostname}${appConfig.healthCheckPath}`)
         return new Monitor(`${appName}-monitor`, {
             period: "EVERY_MINUTE",
             status: "ENABLED",
